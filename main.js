@@ -12,6 +12,7 @@ const ICO_DURATION = 1000;
 var currentBlockNumber = 0;
 var contractAddress;
 var tokenAddress;
+var startBlock;
 
 // Private functions
 var gatherIntentionsPerBlock = function (intentions) {
@@ -44,7 +45,7 @@ var run = function () {
         .then( (currentBlockNumber) => {
             console.log("CURRENT BLOCK NUMBER");
             console.log(currentBlockNumber);
-            let startBlock = currentBlockNumber + BLOCK_OFFSET;
+            startBlock = currentBlockNumber + BLOCK_OFFSET;
             console.log("START BLOCK");
             console.log(startBlock);
             let endBlock = startBlock + ICO_DURATION;
@@ -71,6 +72,8 @@ var run = function () {
 
             Async.each(blockNumbers,
                 function (blockNumber) {
+                    // BlockNumber is now treated as an offset
+                    blockNumber = startBlock + blockNumber;
                     Async.until(
                         function () {
                             return currentBlockNumber >= blockNumber;

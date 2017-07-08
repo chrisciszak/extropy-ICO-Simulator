@@ -47,7 +47,8 @@ var createNewContractInstance = function (name, startBlock, endBlock, fromAccoun
         .then( (_instance) => {
             console.log("Contract Address: " + _instance.address);
             instance = _instance;
-            return instance.createTokenContract();
+            //return instance.createTokenContract();
+            return { address : "0x0"};
         })
         .then( (token) => {
             console.log("Token Address: " + token.address);
