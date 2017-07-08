@@ -1,0 +1,24 @@
+{
+  "name": "extropy-crowdfunding-modeler",
+  "version": "0.0.1",
+  "description": "A tool for modeling the behaviour of different actors during a crowdfunding campaign (ICO)",
+  "main": "main.js",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ExtropyIO/extropy-crowdfunding-modeler.git"
+  },
+  "keywords": [
+    "nodejs",
+    "ico",
+    "ethereum"
+  ],
+  "author": "ExtropyDev",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ExtropyIO/extropy-crowdfunding-modeler/issues"
+  },
+  "homepage": "https://github.com/ExtropyIO/extropy-crowdfunding-modeler#readme"
+}
