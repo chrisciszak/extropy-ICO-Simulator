@@ -23,7 +23,9 @@
   "homepage": "https://github.com/ExtropyIO/extropy-crowdfunding-modeler#readme",
   "dependencies": {
     "bluebird": "^3.5.0",
-    "string": "^3.3.3"
+    "string": "^3.3.3",
+    "truffle-contract": "^1.1.6",
+    "web3": "^0.18.2"
   },
   "devDependencies": {
     "chai": "^3.5.0",
