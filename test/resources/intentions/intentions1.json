@@ -1,0 +1,14 @@
+[
+  {
+    "address" : "0x1234",
+    "amount": 10000,
+    "gasPrice": 10,
+    "blockNumber": 1
+  },
+  {
+    "address" : "0x5678",
+    "amount": 90000000,
+    "gasPrice": 2000,
+    "blockNumber": 1
+  }
+]

@@ -4,7 +4,7 @@
   "description": "A tool for modeling the behaviour of different actors during a crowdfunding campaign (ICO)",
   "main": "main.js",
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha --recursive"
   },
   "repository": {
     "type": "git",
@@ -20,5 +20,14 @@
   "bugs": {
     "url": "https://github.com/ExtropyIO/extropy-crowdfunding-modeler/issues"
   },
-  "homepage": "https://github.com/ExtropyIO/extropy-crowdfunding-modeler#readme"
+  "homepage": "https://github.com/ExtropyIO/extropy-crowdfunding-modeler#readme",
+  "dependencies": {
+    "bluebird": "^3.5.0",
+    "string": "^3.3.3"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-as-promised": "^6.0.0",
+    "mocha": "^3.2.0"
+  }
 }
