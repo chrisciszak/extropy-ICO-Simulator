@@ -39,8 +39,9 @@ var investEther = function (contractAddress, fromAddress, amount, gasPrice) {
     initWeb3();
 
     return new Promise( (resolve, reject) => {
-        web3.eth.sendTransaction({to: contractAddress, from: fromAddress, value: amount, gasPrice : gasPrice}, (txHash, err) => {
+        web3.eth.sendTransaction({to: contractAddress, from: fromAddress, value: amount, gasPrice : gasPrice, gas: 200000}, (err, txHash) => {
             if(err) {
+                console.log("ERROR");
                 console.log(err);
                 reject(err);
             }

@@ -63,52 +63,66 @@ var run = function () {
             intentionsMap = gatherIntentionsPerBlock(intentions);
             let blockNumbers = intentionsMap.keys();
 
-            const q = Async.queue(function(task, callback) {
-                return BlockchainUtils.investEther(contractAddress, task.address, task.amount, task.gasPrice)
-                    .then( (txHash) => {
-                        callback();
-                    })
-                    .catch( (err) => {
-                        console.log(err);
-                    })
-            }, 3);
-
-            Async.each(blockNumbers,
-                function (offset) {
-                    // BlockNumber is now treated as an offset
-                    let blockNumber = startBlock + offset;
-                    Async.until(
-                        function () {
-                            return currentBlockNumber >= blockNumber;
-                        },
-                        function (cb) {
-                            return BlockchainUtils.getCurrentBlockNumber()
-                                .then((_blockNumber) => {
-                                    currentBlockNumber = _blockNumber;
-                                    cb();
-                                })
-                        },
-                        () => {
-                            console.log("REACHED BLOCK HEIGHT");
-                            console.log(blockNumber);
-                            let currentIntentions = intentionsMap.get(offset);
-                            console.log(currentIntentions);
-                            console.log("PERFORMING " +  currentIntentions.length + " INTENTIONS");
-                            for(let intention of currentIntentions) {
-                                q.push(intention, function(err) {
-                                    console.log('finished processing foo');
-                                });
+            return new Promise( (resolve, reject) => {
+                Async.each(
+                    // Iterable
+                    blockNumbers,
+                    // Action to be performed on each item
+                    function (offset) {
+                        // BlockNumber is now treated as an offset
+                        let blockNumber = startBlock + offset;
+                        Async.until(
+                            // Function to call to check if we have reached the correct block height for this batch of intentions
+                            function () {
+                                return currentBlockNumber >= blockNumber;
+                            },
+                            // Function to be called to find out what the block height is
+                            function (cb) {
+                                return BlockchainUtils.getCurrentBlockNumber()
+                                    .then((_blockNumber) => {
+                                        currentBlockNumber = _blockNumber;
+                                        cb();
+                                    })
+                            },
+                            // Function that is called once we reach the desired block height - queue up the transactions to be sent
+                            () => {
+                                console.log("REACHED BLOCK HEIGHT");
+                                console.log(blockNumber);
+                                let currentIntentions = intentionsMap.get(offset);
+                                console.log(currentIntentions);
+                                console.log("PERFORMING " +  currentIntentions.length + " INTENTIONS");
+                                Async.each(
+                                    // Iterable
+                                    currentIntentions,
+                                    // Action to be performed
+                                    function (intention) {
+                                        return BlockchainUtils.investEther(contractAddress, intention.address, intention.amount, intention.gasPrice)
+                                            .then( (txHash) => {
+                                                // console.log(txHash);
+                                            })
+                                            .catch( (err) => {
+                                                console.log("ERROR");
+                                                console.log(err);
+                                            })
+                                    },
+                                    // Callback on completion
+                                    function (err) {
+                                        if(err) {
+                                            console.log("ERROR");
+                                            console.log(err)
+                                        }
+                                        console.log("FINISHED SENDING ALL TXs in this batch");
+                                    }
+                                );
                             }
-                        }
-                    );
-                },
-                function () {
-                    console.log("DONE");
-                }
-            );
-
-            console.log("DONE 2");
-            console.log(q);
+                        );
+                    },
+                    // Callback on completion
+                    function () {
+                        resolve();
+                    }
+                );
+            })
         })
         .catch( (err) => {
             console.log("Error: ");
