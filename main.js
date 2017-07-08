@@ -7,7 +7,11 @@ const Intention = require('./dto/intention.js');
 const BlockchainUtils = require('./utils/blockchain.js');
 const ContractFactory = require('./utils/contractFactory.js');
 
+const BLOCK_OFFSET = 10;
+const ICO_DURATION = 1000;
 var currentBlockNumber = 0;
+var contractAddress;
+var tokenAddress;
 
 // Private functions
 var gatherIntentionsPerBlock = function (intentions) {
@@ -36,14 +40,34 @@ var run = function () {
 
     var intentionsMap;
     // Create the ICO contract and token
-    return ContractFactory.createNewContractInstance()
+    return BlockchainUtils.getCurrentBlockNumber()
+        .then( (currentBlockNumber) => {
+            console.log("CURRENT BLOCK NUMBER");
+            console.log(currentBlockNumber);
+            let startBlock = currentBlockNumber + BLOCK_OFFSET;
+            console.log("START BLOCK");
+            console.log(startBlock);
+            let endBlock = startBlock + ICO_DURATION;
+            console.log("END BLOCK");
+            console.log(endBlock);
+            return ContractFactory.createNewContractInstance("CrowdSale", startBlock, endBlock, '0x89488494f2f4d66289215c674ab08448919d69cc');
+        })
         .then( (contractInstanceDetails) => {
+            contractAddress = contractInstanceDetails.contract;
+            tokenAddress = contractInstanceDetails.token;
             return fs.readFileAsync('./resources/intentions/intentions.json')
         })
         .then((intentionsData) => {
             let intentions = Intention.marshalIntentions(intentionsData);
             intentionsMap = gatherIntentionsPerBlock(intentions);
             let blockNumbers = intentionsMap.keys();
+
+            const q = Async.queue(function(task, callback) {
+                return BlockchainUtils.investEther(contractAddress, task.address, task.amount, task.gasPrice)
+                    .then( () => {
+                        callback();
+                    })
+            }, 2);
 
             Async.each(blockNumbers,
                 function (blockNumber) {
@@ -60,7 +84,14 @@ var run = function () {
                         },
                         () => {
                             console.log("REACHED BLOCK HEIGHT");
-                            console.log(blockNumber)
+                            console.log(blockNumber);
+                            let currentIntentions = intentionsMap.get(blockNumber);
+                            console.log("PERFORMING " +  currentIntentions.length + " INTENTIONS");
+                            for(let intention of currentIntentions) {
+                                q.push(intention, function(err) {
+                                    console.log('finished processing foo');
+                                });
+                            }
                         }
                     );
                 },
@@ -73,6 +104,10 @@ var run = function () {
              for(let blockNumber of blockNumbers) {
 
              }*/
+        })
+        .catch( (err) => {
+            console.log("Error: ");
+            console.log(err);
         })
 };
 

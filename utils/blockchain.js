@@ -35,10 +35,9 @@ var hasBlockHeightBeenReached = function (blockNumber) {
         });
 };
 
-var investEther = function () {
+var investEther = function (contractInstance, fromAddress, amount, gasPrice) {
     initWeb3();
-
-
+    return web3.eth.sendTransaction({to: contractInstance.address, from: fromAddress, value: amount, gasPrice : gasPrice});
 };
 
 module.exports = {

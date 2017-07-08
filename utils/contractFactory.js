@@ -1,6 +1,6 @@
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require("fs"));
-
+const Async = require('async');
 const Web3 = require('web3');
 
 var web3 = undefined;
@@ -12,44 +12,52 @@ var initWeb3 = function () {
     }
 };
 
-var createNewContractInstance = function (name, startBlock, endBlock, price, fromAccount) {
+var createNewContractInstance = function (name, startBlock, endBlock, fromAccount) {
     let instance = undefined;
     let contractWrapper = undefined;
-    return initWeb3()
-        .then( () => {
-            return fs.readFileAsync('./contracts/contract_definitions.json')
-        })
+    initWeb3();
+
+    return fs.readFileAsync('./contracts/contract_definitions.json')
         .then( (contracts) => {
             let contractsList = JSON.parse(contracts);
-            contractWrapper = web3.eth.contract(contractsList.name.abi);
+            let icoDetails = contractsList[name];
+            contractWrapper = web3.eth.contract(icoDetails.abi);
 
-            return contractWrapper.new(startBlock, endBlock, price, {data: contractsList.name.bytecode, from: fromAccount, gas: 1000000});
+            if(fromAccount === undefined) {
+                fromAccount = contractsList['DeployAccount'].address;
+            }
+
+            return contractWrapper.new(startBlock, endBlock, web3.toWei(icoDetails.price, 'ether'), "0x0", {data: icoDetails.bytecode, from: fromAccount, gas: 4700000});
         })
         .then( (txReceipt) => {
-            console.log("THE TX RECEIPT");
-            console.log(txData);
-            return web3.eth.getTransactionReceipt(txReceipt);
-        })
-        .then( (txData) => {
-            console.log("THE TX DATA");
-            console.log(txData);
-
-            return contractWrapper.at(txData.contractAddress);
+            return new Promise( (resolve, reject) => {
+                Async.until(
+                    function () {
+                        return txReceipt.address !== undefined;
+                    },
+                    function (cb) {
+                        setTimeout(cb, 500);
+                    },
+                    () => {
+                        resolve(txReceipt);
+                    }
+                );
+            });
         })
         .then( (_instance) => {
-            console.log("THE INSTANCE");
-            console.log(_instance);
+            console.log("Contract Address: " + _instance.address);
             instance = _instance;
             return instance.createTokenContract();
         })
         .then( (token) => {
-            console.log("THE TOKEN");
+            console.log("Token Address: " + token.address);
             console.log(token);
-        })
+            return {contract : instance.address, token : token.address};
+        });
 };
 
 module.exports = {
-    getContractInstance: createNewContractInstance
+    createNewContractInstance: createNewContractInstance
 }
 
 
