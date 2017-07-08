@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/ExtropyIO/extropy-crowdfunding-modeler#readme",
   "dependencies": {
+    "async": "^2.5.0",
     "bluebird": "^3.5.0",
     "string": "^3.3.3",
     "truffle-contract": "^1.1.6",

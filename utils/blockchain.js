@@ -24,6 +24,17 @@ var getCurrentBlockNumber = function () {
     });
 };
 
+var hasBlockHeightBeenReached = function (blockNumber) {
+    if(blockNumber === undefined || blockNumber < 0) {
+        return Promise.resolve(false);
+    }
+
+    return getCurrentBlockNumber()
+        .then( (currentBlockNumber) => {
+            return Promise.resolve(currentBlockNumber >= blockNumber);
+        });
+};
+
 var investEther = function () {
     initWeb3();
 
@@ -32,5 +43,6 @@ var investEther = function () {
 
 module.exports = {
     getCurrentBlockNumber: getCurrentBlockNumber,
+    hasBlockHeightBeenReached: hasBlockHeightBeenReached,
     investEther: investEther
 }
