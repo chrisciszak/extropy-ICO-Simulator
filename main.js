@@ -1,9 +1,11 @@
 const Promise = require('bluebird');
 const fs = Promise.promisifyAll(require("fs"));
 const Async = require('async');
+var program = require('commander');
 
 const Intention = require('./dto/intention.js');
 const BlockchainUtils = require('./utils/blockchain.js');
+const ContractFactory = require('./utils/contractFactory.js');
 
 var currentBlockNumber = 0;
 
@@ -26,8 +28,18 @@ var gatherIntentionsPerBlock = function (intentions) {
 
 // Public functions
 var run = function () {
+    program
+        .version('0.0.1')
+        .option('-i, --ico', 'The type of ICO contract to model.')
+        .option('-b, --behavior', 'The behavior of the actors to model.')
+        .parse(process.argv);
+
     var intentionsMap;
-    return fs.readFileAsync('./resources/intentions/intentions.json')
+    // Create the ICO contract and token
+    return ContractFactory.createNewContractInstance()
+        .then( (contractInstanceDetails) => {
+            return fs.readFileAsync('./resources/intentions/intentions.json')
+        })
         .then((intentionsData) => {
             let intentions = Intention.marshalIntentions(intentionsData);
             intentionsMap = gatherIntentionsPerBlock(intentions);
@@ -65,17 +77,3 @@ var run = function () {
 };
 
 run();
-
-/*
- Async.whilst(
- function(){ return i < 5; },
-
- function(cb) {
- setTimeout(function() {
- console.log(i++);
- cb();
- }, 1000);
- },
-
- function(err) { console.log("we encountered an error", err); }
- );*/
