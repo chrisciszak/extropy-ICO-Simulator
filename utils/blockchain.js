@@ -35,9 +35,18 @@ var hasBlockHeightBeenReached = function (blockNumber) {
         });
 };
 
-var investEther = function (contractInstance, fromAddress, amount, gasPrice) {
+var investEther = function (contractAddress, fromAddress, amount, gasPrice) {
     initWeb3();
-    return web3.eth.sendTransaction({to: contractInstance.address, from: fromAddress, value: amount, gasPrice : gasPrice});
+
+    return new Promise( (resolve, reject) => {
+        web3.eth.sendTransaction({to: contractAddress, from: fromAddress, value: amount, gasPrice : gasPrice}, (txHash, err) => {
+            if(err) {
+                console.log(err);
+                reject(err);
+            }
+            resolve(txHash);
+        });
+    })
 };
 
 module.exports = {

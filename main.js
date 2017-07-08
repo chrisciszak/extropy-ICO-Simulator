@@ -65,30 +65,34 @@ var run = function () {
 
             const q = Async.queue(function(task, callback) {
                 return BlockchainUtils.investEther(contractAddress, task.address, task.amount, task.gasPrice)
-                    .then( () => {
+                    .then( (txHash) => {
                         callback();
                     })
-            }, 2);
+                    .catch( (err) => {
+                        console.log(err);
+                    })
+            }, 3);
 
             Async.each(blockNumbers,
-                function (blockNumber) {
+                function (offset) {
                     // BlockNumber is now treated as an offset
-                    blockNumber = startBlock + blockNumber;
+                    let blockNumber = startBlock + offset;
                     Async.until(
                         function () {
                             return currentBlockNumber >= blockNumber;
                         },
                         function (cb) {
                             return BlockchainUtils.getCurrentBlockNumber()
-                                .then((blockNumber) => {
-                                    currentBlockNumber = blockNumber;
+                                .then((_blockNumber) => {
+                                    currentBlockNumber = _blockNumber;
                                     cb();
                                 })
                         },
                         () => {
                             console.log("REACHED BLOCK HEIGHT");
                             console.log(blockNumber);
-                            let currentIntentions = intentionsMap.get(blockNumber);
+                            let currentIntentions = intentionsMap.get(offset);
+                            console.log(currentIntentions);
                             console.log("PERFORMING " +  currentIntentions.length + " INTENTIONS");
                             for(let intention of currentIntentions) {
                                 q.push(intention, function(err) {
@@ -103,10 +107,8 @@ var run = function () {
                 }
             );
 
-            /*console.log(blockNumbers.length);
-             for(let blockNumber of blockNumbers) {
-
-             }*/
+            console.log("DONE 2");
+            console.log(q);
         })
         .catch( (err) => {
             console.log("Error: ");
